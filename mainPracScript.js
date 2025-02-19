@@ -207,6 +207,23 @@ $(document).ready(function() {
             alert("삭제 실패하였습니다.");
         }
     });
+
+    $("#addBtn").hover(
+        function () {
+            $(this).css("background-color", "black");
+        },
+        function () {
+            $(this).css("background-color", "#6c757d");
+        }
+    );
+
+    $(document).on("mouseenter", ".delete", function () {
+        $(this).css("color", "red");
+    });
+
+    $(document).on("mouseleave", ".delete", function () {
+        $(this).css("color", "gray");
+    });
     
 })
 

@@ -35,7 +35,7 @@ async function loadGuestbook() {
         let data = doc.data();
 
         let template = $("#guestbook-temp")[0];
-        let temp = $(template.content.cloneNode(true)); // 템플릿 복사 후 jQuery 객체로 변환
+        let temp = $(template.content.cloneNode(true));
 
         temp.find(".guest-name").text(data.name);
         temp.find(".guest-pw").text(data.password);

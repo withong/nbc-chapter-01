@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Poor+Story&display=swap');
+
+* {
+    font-family: "Gowun Dodum", serif;
+}
+
+#title {
+    width: 70%;
+}
+
+#title h1 {
+    font-family: "Poor Story", serif;
+    font-size: 60px;
+}
+
+#title p {
+    font-size: 25px;
+    margin-left: 3px;
+    margin-bottom: 10px;
+}
+
+#titleImg {
+    border-radius: 10px;
+}
+
+#cards {
+    width: 85%;
+    margin: 5px auto 20px auto;
+}
+
+.col>div {
+    border-radius: 10px;
+}
+
+.image {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.card-text {
+    margin-bottom: 5px;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete {
+    color: gray;
+
+    margin-left: auto;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+}
+
+.modal-body {
+    margin: 10px;
+    padding: 0px 10px;
+}
+
+.modal-body>.row {
+    height: 70px;
+    align-items: center;
+}
+
+.col-md {
+    margin: 5px 0px;
+}
+
+.form-floating {
+    margin: 5px;
+}
+
+.form-floating:has(#modalMsg) {
+    margin-bottom: 15px;
+}
+
+.hiddenCard {
+    display: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.member-info {
+    position: relative;
+    overflow: auto;
+    margin: 10px;
+    padding-left: 5px;
+}
+
+#member-date-div {
+    position: absolute;
+    bottom: 0; /* 부모의 맨 아래 */
+    right: 0;
+
+    margin-top: 30px;
+    font-size: 12px;
+}
+
+#member-image-div {
+    margin: 5px;
+}
+
+#member-name {
+    font-size: 30px;
+    font-weight: bolder;
+    margin-right: 5px;
+}
+
+.member-info label {
+    white-space: nowrap;
+    width: 70px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.member-info span {
+    word-break: break-word;
+    white-space: pre-line;
+}
+
+.member-info div {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: max-content auto;
+}
+
+.member-info>div:first-child {
+    margin-bottom: 20px;
+    display: block;
+}
+
+#member-link-div {
+    display: flex;
+    margin:30px 0px;
+}
+
+#member-link-div a {
+    margin-right: 25px;
+}
+
+.showInfoLink .image {
+    height: 200px;
+}

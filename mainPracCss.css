@@ -45,13 +45,15 @@
     margin-bottom: 5px;
 }
 
-.card-footer {
+.card-footer, .guest-comment-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.delete {
+
+
+.delete, .guest-delete {
     color: gray;
 
     margin-left: auto;
@@ -153,4 +155,57 @@ a {
 
 .showInfoLink .image {
     height: 200px;
+}
+
+#guest-book-div {
+    margin: 5px 5px 15px 5px;
+    padding: 5px;
+    max-height: 350px;
+    overflow: auto;
+}
+
+.guest-comment-line {
+    margin: 5px 0px 5px 0px; 
+}
+
+.guest-name {
+    width: 50px;
+    color: gray;
+    margin-right: 20px;
+}
+
+.comment-p {
+    width: 85%;
+    margin: 0px;
+}
+
+#add-guest-book-div .input-group {
+    margin: 5px;
+    width: 98%;
+}
+
+#guest-comment {
+    height: 100px;
+    margin-right: 10px;
+    overflow: auto;
+}
+
+#guestbook-input-div {
+    display: flex;
+    width: 98%;
+    margin: 10px 5px 20px 5px;
+}
+
+#guestbook-add-btn {
+    margin-left: auto;
+    width: 100px;
+    border: 1px solid #ced4da;
+}
+
+.guest-date {
+    font-size: 12px;
+    color: gray;
+    display: block;
+
+    margin-top: 10px;
 }

@@ -131,6 +131,47 @@ function checkLink(link) {
     return link;
 }
 
+// 팀원 삭제 함수
+async function deleteMember() {
+    let card = $(this).closest(".col"); // 클릭한 버튼의 카드 찾기
+    let memberIndex = card.find(".index").text(); // 해당 카드의 인덱스 가져오기
+
+    if (!memberIndex) {
+        alert("오류: 인덱스를 찾을 수 없음");
+        return;
+    }
+
+    let confirmDelete = confirm("정말 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+        
+        let memberDocs = await getDocs(collection(db, "members"));
+        let guestDocs = await getDocs(collection(db, "guestbook"));
+
+        // 해당 팀원의 방명록 삭제
+        guestDocs.forEach(async (doc) => {
+            if (doc.data().memberIndex == memberIndex) {
+                await deleteDoc(doc.ref);
+                console.log("memberIndex: " + memberIndex + " 방명록 삭제 완료");
+            }
+        });
+
+        // 팀원 정보 삭제
+        memberDocs.forEach(async (doc) => {
+            if (doc.data().index == memberIndex) {
+                await deleteDoc(doc.ref); 
+                alert("삭제되었습니다.");
+                location.reload();        
+            }
+        });
+
+    } catch (error) {
+        console.error("삭제 중 오류 발생:", error);
+        alert("삭제 실패하였습니다.");
+    }
+}
+
 $(document).ready(function() {
 
     // 팀원 정보 불러오기
@@ -179,34 +220,7 @@ $(document).ready(function() {
     });
 
     // 팀원 정보 삭제하기
-    $(document).on("click", ".delete", async function () {
-        let card = $(this).closest(".col"); // 클릭한 버튼의 카드 찾기
-        let index = card.find(".index").text(); // 해당 카드의 인덱스 가져오기
-        
-        if (!index) {
-            alert("오류: 인덱스를 찾을 수 없음");
-            return;
-        }
-
-        let confirmDelete = confirm("정말 삭제하시겠습니까?");
-        if (!confirmDelete) return;
-    
-        try {
-            // Firestore에서 해당 데이터 삭제
-            let docs = await getDocs(collection(db, "members"));
-    
-            docs.forEach(async (doc) => {
-                if (doc.data().index == index) { // 인덱스가 일치하는 데이터 찾기
-                    await deleteDoc(doc.ref); // Firestore에서 삭제
-                    alert("삭제되었습니다.");
-                    location.reload(); // 페이지 새로고침
-                }
-            });
-        } catch (error) {
-            console.error("삭제 중 오류 발생:", error);
-            alert("삭제 실패하였습니다.");
-        }
-    });
+    $(document).on("click", ".delete", deleteMember);
 
     $("#addBtn").hover(
         function () {

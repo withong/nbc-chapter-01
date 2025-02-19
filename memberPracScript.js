@@ -208,7 +208,7 @@ $(document).ready(function () {
         console.log("index: ", index);
         console.log("updateComment: ", updateComment);
         console.log("updateDate: ", updateDate);
-    
+
         try {
             const guestbookRef = collection(db, "guestbook");
             const q = query(guestbookRef, where("index", "==", Number(index))); // 숫자로 변환하여 비교
@@ -233,7 +233,7 @@ $(document).ready(function () {
             }
         } catch (error) {
             console.error("문서 업데이트 실패:", error);
-        }
+        }        
     });
 
     $(document).on("click", ".guest-delete", deleteComment);
@@ -251,14 +251,21 @@ $(document).ready(function () {
 
         let list = $(this).closest("li");
         let index = list.find(".guestbook-index").text(); // 방명록 인덱스
+        let pwd = list.find(".guest-pw").text(); // 방명록 비밀번호
         let comment = list.find(".guest-comment").html(); // 수정 전 방명록
-        
-        let template = $("#update-guestbook")[0];
-        let temp = $(template.content.cloneNode(true));
 
-        temp.find('.guestbook-index').text(index);
-        temp.find('#update-guest-comment').html(comment);
-        list.after(temp);
+        let password = prompt("비밀번호를 입력하세요.");
 
+        if (password == pwd) {
+            let template = $("#update-guestbook")[0];
+            let temp = $(template.content.cloneNode(true));
+
+            temp.find('.guestbook-index').text(index);
+            temp.find('.guest-pw').text(pwd);
+            temp.find('#update-guest-comment').html(comment);
+            list.after(temp);
+        } else {
+            alert("비밀번호가 일치하지 않습니다.");
+        }
     })
 });

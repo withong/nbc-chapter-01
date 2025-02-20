@@ -44,8 +44,19 @@ async function loadGuestbook() {
         temp.find(".member-index").text(data.memberIndex);
         temp.find(".guestbook-index").text(data.index);
 
-        $("#guestbook-list").append(temp);
+        $("#guestbook-list").prepend(temp);
     });
+    scrollToLastComment();
+}
+
+// 방명록 스크롤 맨 아래로
+function scrollToLastComment() {
+    const guestbookList = $("#guestbook-list");
+    const lastGuestbookItem = guestbookList.find("li").last();
+
+    if (lastGuestbookItem.length) {
+        lastGuestbookItem[0].scrollIntoView({ behavior: "smooth", block: "end" });
+    }
 }
 
 async function getLastGuestIndex() {
@@ -138,7 +149,7 @@ async function deleteComment() {
 
 $(document).ready(function () {
 
-    $(document).on("click", ".showInfoLink", function() {
+    $(document).on("click", ".showInfoLink", async function() {
         let data = $(this).data();
         let page = $($("#showMemberInfo")[0]);
 
@@ -154,7 +165,8 @@ $(document).ready(function () {
         page.find("#member-index").text(data.index);
         page.find("#member-date").text(data.date);
 
-        loadGuestbook();
+        await loadGuestbook();
+        setTimeout(scrollToLastComment, 200);
     });
 
     // 팀원 방명록 저장하기
@@ -247,25 +259,39 @@ $(document).ready(function () {
     });
 
     $(document).on("click", ".guest-update", function () {
-        console.log("수정 버튼 클릭");
-
         let list = $(this).closest("li");
+        let updateLi = list.next('li');
+        let checkUpdateBox = list.next('li').find('#guestbook-update-div').length;
+
         let index = list.find(".guestbook-index").text(); // 방명록 인덱스
         let pwd = list.find(".guest-pw").text(); // 방명록 비밀번호
         let comment = list.find(".guest-comment").html(); // 수정 전 방명록
 
-        let password = prompt("비밀번호를 입력하세요.");
+        console.log("pwd: ", pwd);
 
-        if (password == pwd) {
-            let template = $("#update-guestbook")[0];
-            let temp = $(template.content.cloneNode(true));
-
-            temp.find('.guestbook-index').text(index);
-            temp.find('.guest-pw').text(pwd);
-            temp.find('#update-guest-comment').html(comment);
-            list.after(temp);
+        if (checkUpdateBox > 0) {
+            // 수정 박스 열려 있으면 수정 취소
+            updateLi.remove();
         } else {
-            alert("비밀번호가 일치하지 않습니다.");
+            // 수정 박스 안 열려 있으면 수정
+            let password = prompt("비밀번호를 입력하세요.");
+    
+            if (password == pwd) {
+                let template = $("#update-guestbook")[0];
+                let temp = $(template.content.cloneNode(true));
+    
+                temp.find('.guestbook-index').text(index);
+                temp.find('.guest-pw').text(pwd);
+                temp.find('#update-guest-comment').html(comment);
+                list.after(temp);
+
+                // 마지막 댓글인지 체크
+                let isLast = list.next("li").is(":last-child");
+                if(isLast) scrollToLastComment();
+
+            } else {
+               alert("비밀번호가 일치하지 않습니다.");
+            }    
         }
     })
 });

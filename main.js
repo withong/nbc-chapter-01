@@ -1,8 +1,8 @@
 // Firebase SDK 라이브러리 가져오기
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { collection, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, addDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // Firebase 구성 정보 설정
 const firebaseConfig = {
@@ -23,12 +23,21 @@ const db = getFirestore(app);
 
 $(document).ready(function() {
 
+    // select 값 세팅
+    setSelectValue();
+
     // 팀원 목록 조회
     loadMembers();
 
     // 팀원 등록
     $("#saveBtn").on("click", addMember);
 
+    // 수정 아이콘 클릭 이벤트
+    $(document).on("click", ".edit", editBtnEvent);
+
+    // 팀원 수정
+    $("#editBtn").on("click", editMember);
+    
     // 팀원 삭제
     $(document).on("click", ".delete", deleteMember);
 
@@ -41,14 +50,39 @@ $(document).ready(function() {
         }
     );
 
-    $(document).on("mouseenter", ".delete", function () {
+    $(document).on("mouseenter", ".delete, .edit", function () {
         $(this).css("color", "red");
     });
 
-    $(document).on("mouseleave", ".delete", function () {
+    $(document).on("mouseleave", ".delete, .edit", function () {
         $(this).css("color", "gray");
-    }); 
+    });
+
+    $(document).on("click", "#addBtn", function() {
+        $("#editBtn").hide();
+    });
+
+    // 모달창 닫히면 입력 값 클리어
+    $('#createMember').on('hidden.bs.modal', function () {
+        $("#modalImg").val("");
+        $("#modalName").val("");
+        $("#modalGender").val("선택");
+        $("#modalBirth").val("선택");
+        $("#modalMbti").val("");
+        $("#modalHobby").val("");
+        $("#modalGit").val("");
+        $("#modalBlog").val("");
+        $("#modalMsg").val("");
+    });
 });
+
+// 출생년도 select 값 세팅
+function setSelectValue() {
+    let select = $("#modalBirth");
+    for (let year = 1960; year <= 2020; year++) {
+        select.append(`<option value="${year}">${year}</option>`);
+    }    
+}
 
 // 마지막 인덱스를 가져오는 함수
 async function getLastIndex() {
@@ -69,7 +103,7 @@ function checkInput() {
         { id: "#modalImg", message: "이미지 주소를 입력하세요." },
         { id: "#modalName", message: "이름을 입력하세요." },
         { id: "#modalGender", message: "성별을 선택하세요." },
-        { id: "#modalAge", message: "나이를 입력하세요." },
+        { id: "#modalBirth", message: "출생년도를 선택하세요." },
         { id: "#modalMbti", message: "MBTI를 입력하세요." },
         { id: "#modalHobby", message: "취미를 입력하세요." },
         { id: "#modalGit", message: "GitHub 주소를 입력하세요." },
@@ -100,6 +134,16 @@ function getTodayDate() {
     return `${year}-${month}-${day}`;
 }
 
+function getAge(birth) {
+    let year = new Date().getFullYear();
+    return (year-birth);
+}
+
+function getBirth(age) {
+    let year = new Date().getFullYear();
+    return (year-age);
+}
+
 // 팀원 목록 조회
 async function loadMembers() {
     $("#cards").empty();
@@ -107,6 +151,7 @@ async function loadMembers() {
 
     docs.forEach((doc) => {
         let row = doc.data();
+        let id = doc.id;
 
         let index = row["index"];
         let image = row["image"];
@@ -123,10 +168,11 @@ async function loadMembers() {
         let template = $("#cardTemplate")[0];
         let temp = $(template.content.cloneNode(true)); // 템플릿 복사 후 jQuery 객체로 변환
 
+        temp.attr("data-id", id);
         temp.find(".image").attr("src", image);
         temp.find(".name").text(name);
         temp.find(".gender").text(gender);
-        temp.find(".age").text(age + "살");
+        temp.find(".age").text(age + "세");
         temp.find(".mbti").text(mbti);
         temp.find(".hobby").text(hobby);
         temp.find(".git").text(git);
@@ -176,7 +222,7 @@ async function addMember() {
     let image = $("#modalImg").val();
     let name = $("#modalName").val();
     let gender = $("#modalGender").val();
-    let age = $("#modalAge").val();
+    let age = getAge($("#modalBirth").val()); // 연 나이
     let mbti = $("#modalMbti").val();
     let hobby = $("#modalHobby").val();
     let git = checkLink(userGit);
@@ -202,6 +248,117 @@ async function addMember() {
         await addDoc(collection(db, "members"), doc);
         alert("팀원 정보가 저장되었습니다.");
         window.location.reload();    
+    }
+}
+
+// 수정 아이콘 클릭 이벤트
+function editBtnEvent() {
+
+    let card = $(this).closest(".col");
+    let name = card.find(".name").text();
+    let ageWithSuffix = card.find(".age").text();
+    let gender = card.find(".gender").text();
+    let mbti = card.find(".mbti").text();
+    let hobby = card.find(".hobby").text();
+    let git = card.find(".git").text();
+    let blog = card.find(".blog").text();
+    let message = card.find(".message").text();
+    let id = card.data("id"); // Firestore 문서 ID 가져오기
+    let index = card.find(".index").text(); // index 값 가져오기
+
+    let age = ageWithSuffix.replace("세", "");
+    let birth = getBirth(Number(age));
+
+    // index 값이 올바른지 로그로 확인
+    console.log("가져온 index:", index);
+
+    // 모달에 기존 정보 세팅
+    $("#modalName").val(name);
+    $("#modalBirth").val(birth); // 숫자만 설정
+    $("#modalGender").val(gender);
+    $("#modalMbti").val(mbti);
+    $("#modalHobby").val(hobby);
+    $("#modalGit").val(git);
+    $("#modalBlog").val(blog);
+    $("#modalMsg").val(message);
+    $("#modalImg").val(card.find(".image").attr("src"));
+
+    // 모달 오픈
+    $("#createMember").modal("show");
+
+    // 수정할 때 Firestore 문서 index 저장
+    $("#editBtn").data("index", index); // editBtn에 index 저장
+
+    // editBtn을 보이게 하고 saveBtn 숨기기
+    $("#editBtn").show(); // editBtn 보이기
+    $("#saveBtn").hide(); // saveBtn 숨기기
+}
+
+// 팀원 수정
+async function editMember() {
+    console.log("수정하기 버튼 클릭");
+    const index = $(this).data("index"); // 수정할 Firestore 문서 index 가져오기
+
+    if (!index) {
+        console.error("문서 index를 찾을 수 없습니다.");
+        alert("문서 index를 찾을 수 없습니다.");
+        return;
+    }
+
+    let image = $("#modalImg").val();
+    let name = $("#modalName").val();
+    let gender = $("#modalGender").val();
+    let age = getAge($("#modalBirth").val());
+    let mbti = $("#modalMbti").val();
+    let hobby = $("#modalHobby").val();
+    let git = checkLink($("#modalGit").val());
+    let blog = checkLink($("#modalBlog").val());
+    let message = $("#modalMsg").val();
+    let date = getTodayDate(); // 현재 날짜 가져오기
+
+    // Firestore에서 해당 index를 가진 문서 참조
+    const q = query(collection(db, "members"), where("index", "==", parseInt(index))); // index를 숫자로 변환
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+        alert("해당 index에 대한 문서를 찾을 수 없습니다.");
+        return;
+    }
+
+    const docRef = querySnapshot.docs[0].ref; // 첫 번째 문서 참조
+
+    if (checkInput()) {
+        try {
+            await updateDoc(docRef, {
+                image: image,
+                name: name,
+                gender: gender,
+                age: age,
+                mbti: mbti,
+                hobby: hobby,
+                git: git,
+                blog: blog,
+                message: message,
+                date: date
+            });
+    
+            // 수정된 내용을 기존 멤버 카드에 반영
+            const card = $(`[data-id='${docRef.id}']`); // 수정된 카드 찾기
+            card.find(".image").attr("src", image);
+            card.find(".name").text(name);
+            card.find(".gender").text(gender);
+            card.find(".age").text(age + "살");
+            card.find(".mbti").text(mbti);
+            card.find(".hobby").text(hobby);
+            card.find(".git").text(git);
+            card.find(".blog").text(blog);
+            card.find(".message").text(message);
+    
+            alert("정보가 수정되었습니다.");
+            window.location.reload();
+        } catch (error) {
+            console.error("문서 업데이트 실패:", error);
+            alert("정보 수정 중 오류가 발생했습니다.");
+        }    
     }
 }
 
